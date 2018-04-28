@@ -43,10 +43,10 @@ type item struct {
 }
 
 type itemPrice struct {
-	Min float32 `json:"min,omitempty"`
-	Max float32 `json:"max,omitempty"`
-	Avg float32 `json:"avg,omitempty"`
-	Vol float32 `json:"vol,omitempty"`
+	Min float64 `json:"min,omitempty"`
+	Max float64 `json:"max,omitempty"`
+	Avg float64 `json:"avg,omitempty"`
+	Vol int64   `json:"vol,omitempty"`
 	Ord int64   `json:"ord,omitempty"`
 }
 
@@ -105,7 +105,7 @@ func format(ip *item) string {
 		"Min: %.2f\n"+
 		"Avg: %.2f\n"+
 		"Max: %.2f\n"+
-		"Vol: %.2f\n"+
+		"Vol: %d\n"+
 		"Ord: %d\n"+
 		"```\n"+
 		"```\n"+
@@ -113,7 +113,7 @@ func format(ip *item) string {
 		"Min: %.2f\n"+
 		"Avg: %.2f\n"+
 		"Max: %.2f\n"+
-		"Vol: %.2f\n"+
+		"Vol: %d\n"+
 		"Ord: %d\n"+
 		"```", ip.ItemName, ip.Sell.Min, ip.Sell.Avg, ip.Sell.Max, ip.Sell.Vol, ip.Sell.Ord, ip.Buy.Min, ip.Buy.Avg, ip.Buy.Max, ip.Buy.Vol, ip.Buy.Ord)
 }

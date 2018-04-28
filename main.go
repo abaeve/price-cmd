@@ -29,7 +29,7 @@ func main() {
 		cmdArgs.Add(an, ac)
 	}
 
-	service = config.NewService(Version, "cmd", name, initialize)
+	service = config.NewService(Version, "bot.command.cmd", name, initialize)
 
 	if err := service.Run(); err != nil {
 		fmt.Println(err)
@@ -39,21 +39,24 @@ func main() {
 // This function is a callback from the config.NewService function.  Read those docs
 func initialize(config *config.Configuration) error {
 	proto.RegisterCommandHandler(service.Server(),
-		command.NewCommand(name, cmdArgs, &clientFactory{service.Client()}),
+		command.NewCommand(name, cmdArgs, &clientFactory{c: service.Client(), conf: config}),
 	)
 
 	return nil
 }
 
 type clientFactory struct {
-	c client.Client
+	c    client.Client
+	conf *config.Configuration
 }
 
 func (cf *clientFactory) PricingService() pricing.PricesService {
-	return &pricingService{}
+	return pricing.PricesServiceClient(cf.conf.LookupService("srv", "pricing"), cf.c)
+	//return &pricingService{}
 }
 
 func (cf *clientFactory) TypeService() sde.TypeQueryService {
+	//return sde.TypeQueryServiceClient(cf.conf.LookupService("srv", "sde-service"), cf.c)
 	return &typeService{}
 }
 
@@ -70,14 +73,14 @@ func (ps *pricingService) GetItemPrice(ctx context.Context, in *pricing.ItemPric
 				Min: 0.1,
 				Max: 0.2,
 				Avg: 0.3,
-				Vol: 0.4,
+				Vol: 2,
 				Ord: 1,
 			},
 			Sell: &pricing.ItemPrice{
 				Min: 0.5,
 				Max: 0.6,
 				Avg: 0.7,
-				Vol: 0.8,
+				Vol: 1,
 				Ord: 2,
 			},
 		},
@@ -95,8 +98,8 @@ func (ts *typeService) FindTypesByTypeNames(ctx context.Context, in *sde.TypeNam
 	return &sde.TypeResponse{
 		Type: []*sde.Type{
 			{
-				TypeId: 1234,
-				Name:   "150mm Rail Gun II",
+				TypeId: 593,
+				Name:   "Tristan",
 			},
 		},
 	}, nil
