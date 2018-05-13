@@ -52,62 +52,8 @@ type clientFactory struct {
 
 func (cf *clientFactory) PricingService() pricing.PricesService {
 	return pricing.PricesServiceClient(cf.conf.LookupService("srv", "pricing"), cf.c)
-	//return &pricingService{}
 }
 
 func (cf *clientFactory) TypeService() sde.TypeQueryService {
-	//return sde.TypeQueryServiceClient(cf.conf.LookupService("srv", "sde-service"), cf.c)
-	return &typeService{}
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-type pricingService struct {
-}
-
-func (ps *pricingService) GetItemPrice(ctx context.Context, in *pricing.ItemPriceRequest, opts ...client.CallOption) (*pricing.ItemPriceResponse, error) {
-	return &pricing.ItemPriceResponse{
-		Item: &pricing.Item{
-			ItemId: in.ItemId,
-			Buy: &pricing.ItemPrice{
-				Min: 0.1,
-				Max: 0.2,
-				Avg: 0.3,
-				Vol: 2,
-				Ord: 1,
-			},
-			Sell: &pricing.ItemPrice{
-				Min: 0.5,
-				Max: 0.6,
-				Avg: 0.7,
-				Vol: 1,
-				Ord: 2,
-			},
-		},
-	}, nil
-}
-
-type typeService struct {
-}
-
-func (ts *typeService) FindTypesByTypeIds(ctx context.Context, in *sde.TypeIdRequest, opts ...client.CallOption) (*sde.TypeResponse, error) {
-	return &sde.TypeResponse{}, nil
-}
-
-func (ts *typeService) FindTypesByTypeNames(ctx context.Context, in *sde.TypeNameRequest, opts ...client.CallOption) (*sde.TypeResponse, error) {
-	return &sde.TypeResponse{
-		Type: []*sde.Type{
-			{
-				TypeId: 593,
-				Name:   "Tristan",
-			},
-		},
-	}, nil
-}
-
-func (ts *typeService) SearchForTypes(ctx context.Context, in *sde.TypeNameRequest, opts ...client.CallOption) (*sde.TypeNameAndIdResponse, error) {
-	return &sde.TypeNameAndIdResponse{
-		TypeId: []int32{1234},
-		Name:   []string{"150mm Rail Gun II"},
-	}, nil
+	return sde.TypeQueryServiceClient(cf.conf.LookupService("srv", "sde"), cf.c)
 }

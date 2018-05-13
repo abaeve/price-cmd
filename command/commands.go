@@ -6,8 +6,9 @@ import (
 	"github.com/abaeve/sde-service/proto"
 	bot "github.com/chremoas/chremoas/proto"
 	"github.com/chremoas/services-common/args"
-	"github.com/pkg/errors"
+	"github.com/dustin/go-humanize"
 	"golang.org/x/net/context"
+	"math"
 	"strings"
 )
 
@@ -71,8 +72,6 @@ func dodi(ctx context.Context, request *bot.ExecRequest) string {
 }
 
 func execute(ctx context.Context, request *bot.ExecRequest, regionId int32) string {
-	fmt.Printf("Exec: %v\n", request)
-
 	if len(request.Args) < 3 {
 		return "Not enough arguments"
 	}
@@ -81,7 +80,7 @@ func execute(ctx context.Context, request *bot.ExecRequest, regionId int32) stri
 
 	typeId, err := findTypeId(search)
 	if err != nil {
-		return "Disambiguate please..."
+		return fmt.Sprintf("No type with name %s found", search)
 	}
 
 	return executeContinued(ctx, request, search, regionId, typeId)
@@ -102,40 +101,45 @@ func format(ip *item) string {
 	return fmt.Sprintf("Item: %s\n"+
 		"```\n"+
 		"Sell\n"+
-		"Min: %.2f\n"+
-		"Avg: %.2f\n"+
-		"Max: %.2f\n"+
-		"Vol: %d\n"+
-		"Ord: %d\n"+
+		"Min: %s\n"+
+		"Avg: %s\n"+
+		"Max: %s\n"+
+		"Vol: %s\n"+
+		"Ord: %s\n"+
 		"```\n"+
 		"```\n"+
 		"Buy\n"+
-		"Min: %.2f\n"+
-		"Avg: %.2f\n"+
-		"Max: %.2f\n"+
-		"Vol: %d\n"+
-		"Ord: %d\n"+
-		"```", ip.ItemName, ip.Sell.Min, ip.Sell.Avg, ip.Sell.Max, ip.Sell.Vol, ip.Sell.Ord, ip.Buy.Min, ip.Buy.Avg, ip.Buy.Max, ip.Buy.Vol, ip.Buy.Ord)
+		"Max: %s\n"+
+		"Avg: %s\n"+
+		"Min: %s\n"+
+		"Vol: %s\n"+
+		"Ord: %s\n"+
+		"```",
+		ip.ItemName,
+		humanize.Commaf(Round(ip.Sell.Min)),
+		humanize.Commaf(Round(ip.Sell.Avg)),
+		humanize.Commaf(Round(ip.Sell.Max)),
+		humanize.Comma(ip.Sell.Vol),
+		humanize.Comma(ip.Sell.Ord),
+		humanize.Commaf(Round(ip.Buy.Max)),
+		humanize.Commaf(Round(ip.Buy.Avg)),
+		humanize.Commaf(Round(ip.Buy.Min)),
+		humanize.Comma(ip.Buy.Vol),
+		humanize.Comma(ip.Buy.Ord))
 }
 
 func findTypeId(search string) (int32, error) {
-	fmt.Printf("Search: %s\n", search)
-	typeRsp, err := CCF.TypeService().FindTypesByTypeNames(context.Background(), &sde.TypeNameRequest{
-		TypeName: []string{search},
+	typeRsp, err := CCF.TypeService().FindTypeByTypeName(context.Background(), &sde.TypeNameRequest{
+		TypeName: search,
 	})
 	if err != nil {
 		return 0, err
 	}
 
-	if len(typeRsp.Type) > 1 {
-		return typeRsp.Type[0].TypeId, errors.New("too many responses")
-	}
-
-	return typeRsp.Type[0].TypeId, nil
+	return typeRsp.Type.TypeId, nil
 }
 
 func fetchPrice(ctx context.Context, regionId, typeId int32) (*item, error) {
-	fmt.Printf("Region: %d, Type: %d\n", regionId, typeId)
 	psItemPrice, err := CCF.PricingService().GetItemPrice(ctx, &pricing.ItemPriceRequest{RegionId: regionId, ItemId: typeId})
 	if err != nil {
 		return nil, err
@@ -161,6 +165,6 @@ func fetchPrice(ctx context.Context, regionId, typeId int32) (*item, error) {
 	}, nil
 }
 
-func fetchTypeIdFromTypeName(ctx context.Context, typeName string) (int32, error) {
-	return 0, nil
+func Round(x float64) float64 {
+	return math.Round(x*100) / 100
 }
