@@ -2,16 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/chremoas/services-common/config"
-	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/client"
-
-	"context"
 	"github.com/abaeve/price-cmd/command"
 	"github.com/abaeve/pricing-service/proto"
 	"github.com/abaeve/sde-service/proto"
 	proto "github.com/chremoas/chremoas/proto"
 	"github.com/chremoas/services-common/args"
+	"github.com/chremoas/services-common/config"
+	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/client"
 )
 
 var Version = "1.0.0"

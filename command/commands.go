@@ -78,12 +78,12 @@ func execute(ctx context.Context, request *bot.ExecRequest, regionId int32) stri
 
 	search := strings.Join(request.Args[2:], " ")
 
-	typeId, err := findTypeId(search)
+	typeId, typeName, err := findTypeId(search)
 	if err != nil {
 		return fmt.Sprintf("No type with name %s found", search)
 	}
 
-	return executeContinued(ctx, request, search, regionId, typeId)
+	return executeContinued(ctx, request, typeName, regionId, typeId)
 }
 
 func executeContinued(ctx context.Context, request *bot.ExecRequest, itemName string, regionId, typeId int32) string {
@@ -128,15 +128,15 @@ func format(ip *item) string {
 		humanize.Comma(ip.Buy.Ord))
 }
 
-func findTypeId(search string) (int32, error) {
+func findTypeId(search string) (int32, string, error) {
 	typeRsp, err := CCF.TypeService().FindTypeByTypeName(context.Background(), &sde.TypeNameRequest{
 		TypeName: search,
 	})
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
-	return typeRsp.Type.TypeId, nil
+	return typeRsp.Type.TypeId, typeRsp.Type.Name, nil
 }
 
 func fetchPrice(ctx context.Context, regionId, typeId int32) (*item, error) {
